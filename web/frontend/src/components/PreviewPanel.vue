@@ -43,11 +43,11 @@
           </div>
           <div class="status-banner info-banner" v-if="preview.reasoning_count > 0">
             <n-icon color="#2080f0"><InformationCircleOutline /></n-icon>
-            <span>{{ $t('preview.willBeDeleted') }} <strong>{{ preview.reasoning_count }}</strong> {{ $t('preview.reasoningBlocks') }}</span>
+            <span>{{ $t('preview.willDeleteReasoning', { count: preview.reasoning_count }) }}</span>
           </div>
           <div class="status-banner info-banner" v-if="preview.thinking_count > 0">
             <n-icon color="#8b5cf6"><InformationCircleOutline /></n-icon>
-            <span>{{ $t('preview.willBeDeleted') }} <strong>{{ preview.thinking_count }}</strong> {{ $t('preview.thinkingBlocks') }}</span>
+            <span>{{ $t('preview.willDeleteThinking', { count: preview.thinking_count }) }}</span>
           </div>
 
           <!-- 对话摘要 -->
@@ -78,7 +78,7 @@
             </div>
           </div>
           <div v-else class="empty-content">
-            <n-empty description="当前会话无对话内容" />
+            <n-empty :description="$t('preview.noConversation')" />
           </div>
         </div>
 
@@ -86,13 +86,13 @@
           <!-- 推理内容提示 -->
           <div v-if="preview.reasoning_count > 0" class="reasoning-banner">
             <n-icon><InformationCircleOutline /></n-icon>
-            <span>执行清理时还将删除 {{ preview.reasoning_count }} 条推理内容</span>
+            <span>{{ $t('preview.willDeleteReasoning', { count: preview.reasoning_count }) }}</span>
           </div>
 
           <!-- Thinking Block 提示 -->
           <div v-if="preview.thinking_count > 0" class="thinking-banner">
             <n-icon><InformationCircleOutline /></n-icon>
-            <span>执行清理时还将移除 {{ preview.thinking_count }} 个 Thinking Block（无效签名）</span>
+            <span>{{ $t('preview.willDeleteThinking', { count: preview.thinking_count }) }}</span>
           </div>
 
           <div class="changes-list">
@@ -108,12 +108,12 @@
                 >
                   {{ changeTagLabel(change.type) }}
                 </n-tag>
-                <span class="line-num">第 {{ change.line_num }} 行</span>
+                <span class="line-num">L{{ change.line_num }}</span>
               </div>
 
               <div v-if="change.type === 'replace'" class="change-content">
                 <div class="content-block original">
-                  <div class="content-label">原始内容</div>
+                  <div class="content-label">{{ $t('preview.original') }}</div>
                   <pre>{{ change.original }}</pre>
                 </div>
                 <div class="content-arrow">
@@ -123,8 +123,8 @@
                 </div>
                 <div class="content-block replacement">
                   <div class="content-label">
-                    替换为
-                    <n-tag v-if="change._ai_generated" size="small" type="success" style="margin-left: 6px">AI 生成</n-tag>
+                    {{ $t('preview.replacement') }}
+                    <n-tag v-if="change._ai_generated" size="small" type="success" style="margin-left: 6px">AI</n-tag>
                   </div>
                   <pre>{{ change.replacement }}</pre>
                 </div>
@@ -132,14 +132,14 @@
 
               <div v-else-if="change.type === 'remove_thinking'" class="change-content">
                 <div class="content-block thinking">
-                  <div class="content-label">移除 Thinking Block</div>
-                  <pre>{{ change.content || '(Thinking block with invalid signature)' }}</pre>
+                  <div class="content-label">{{ $t('preview.removeThinking') }}</div>
+                  <pre>{{ change.content || '(Thinking block)' }}</pre>
                 </div>
               </div>
 
               <div v-else class="change-content">
                 <div class="content-block deleted">
-                  <div class="content-label">删除内容</div>
+                  <div class="content-label">{{ $t('preview.deleted') }}</div>
                   <pre>{{ change.content }}</pre>
                 </div>
               </div>
@@ -154,7 +154,7 @@
         <div v-if="preview.diff_items && preview.diff_items.length > 0" class="diff-content">
           <div class="diff-header-banner">
             <n-icon><InformationCircleOutline /></n-icon>
-            <span>清理前后对比（与最近一次备份对比）</span>
+            <span>{{ $t('preview.diffWithBackup') }}</span>
           </div>
           <div
             v-for="(item, index) in preview.diff_items"
@@ -185,14 +185,14 @@
             <div v-if="change.type === 'delete'" class="diff-line deleted">
               <span class="line-number">{{ change.line_num }}</span>
               <span class="diff-marker">-</span>
-              <pre class="diff-text">{{ change.content || '推理内容' }}</pre>
+              <pre class="diff-text">{{ change.content || $t('preview.reasoningBlocks') }}</pre>
             </div>
 
             <!-- 移除 Thinking Block -->
             <div v-else-if="change.type === 'remove_thinking'" class="diff-line thinking-removed">
               <span class="line-number">{{ change.line_num }}</span>
               <span class="diff-marker">~</span>
-              <pre class="diff-text">{{ change.content || '[Thinking Block removed]' }}</pre>
+              <pre class="diff-text">{{ change.content || '[Thinking Block]' }}</pre>
             </div>
 
             <!-- 替换：显示删除和新增 -->
@@ -213,7 +213,7 @@
         </div>
 
         <div v-else class="empty-content">
-          <n-empty description="无修改内容" type="success">
+          <n-empty :description="$t('preview.noChanges')" type="success">
             <template #icon>
               <n-icon size="48" color="#18a058">
                 <CheckmarkCircleOutline />
@@ -228,9 +228,11 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { CheckmarkCircleOutline, ArrowDownOutline, SwapHorizontalOutline, CodeOutline, InformationCircleOutline } from '@vicons/ionicons5'
 import { useSessionStore } from '../stores/sessionStore'
 
+const { t } = useI18n()
 const sessionStore = useSessionStore()
 const activeTab = ref('changes')
 
@@ -244,9 +246,9 @@ function changeTagType(type) {
 }
 
 function changeTagLabel(type) {
-  if (type === 'replace') return '替换'
-  if (type === 'remove_thinking') return '移除 Thinking'
-  return '删除'
+  if (type === 'replace') return t('preview.replace')
+  if (type === 'remove_thinking') return t('preview.removeThinking')
+  return t('preview.delete')
 }
 
 // 已清理会话（有备份）默认显示 Diff 视图
