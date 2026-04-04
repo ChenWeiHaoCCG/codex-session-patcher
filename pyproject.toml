@@ -18,6 +18,9 @@ codex-patcher-web = "web.backend.main:run_server"
 [tool.setuptools.packages.find]
 include = ["codex_patcher", "codex_session_patcher", "web"]
 
+[tool.setuptools.package-data]
+codex_session_patcher = ["ctf_config/prompts/*.md"]
+
 [project.optional-dependencies]
 web = [
     "fastapi>=0.100.0",

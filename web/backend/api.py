@@ -1204,17 +1204,14 @@ def _read_ctf_prompt_for_tool(tool: str) -> str | None:
 
 
 def _get_default_prompt(tool: str) -> str:
-    """获取工具的默认提示词模板"""
-    from codex_session_patcher.ctf_config.templates import (
-        SECURITY_MODE_PROMPT, CLAUDE_CODE_SECURITY_MODE_PROMPT,
-        OPENCODE_SECURITY_MODE_PROMPT,
-    )
-    defaults = {
-        'codex': SECURITY_MODE_PROMPT,
-        'claude_code': CLAUDE_CODE_SECURITY_MODE_PROMPT,
-        'opencode': OPENCODE_SECURITY_MODE_PROMPT,
-    }
-    return defaults.get(tool, '')
+    """获取工具的默认提示词模板（从 BUILTIN_TEMPLATES 中取 default:True 的条目）"""
+    from codex_session_patcher.ctf_config.templates import BUILTIN_TEMPLATES
+    templates = BUILTIN_TEMPLATES.get(tool, [])
+    for t in templates:
+        if t.get('default'):
+            return t['prompt']
+    # 兜底：返回第一个
+    return templates[0]['prompt'] if templates else ''
 
 
 @router.get("/ctf/prompt/{tool}")
