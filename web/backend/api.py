@@ -1184,16 +1184,39 @@ def _save_raw_config(data: dict):
 
 
 _CTF_PROMPT_PATHS = {
-    'codex': os.path.expanduser("~/.codex/prompts/security_mode.md"),
     'claude_code': os.path.expanduser("~/.claude-ctf-workspace/.claude/CLAUDE.md"),
     'opencode': os.path.expanduser("~/.opencode-ctf-workspace/AGENTS.md"),
 }
+_SUPPORTED_CTF_PROMPT_TOOLS = {'codex', 'claude_code', 'opencode'}
+
+
+def _get_ctf_prompt_path(tool: str) -> str | None:
+    if tool == 'codex':
+        from codex_session_patcher.ctf_config.status import get_codex_prompt_path
+        return get_codex_prompt_path()
+    return _CTF_PROMPT_PATHS.get(tool)
+
+
+def _is_ctf_prompt_installed(tool: str) -> bool:
+    from codex_session_patcher.ctf_config import check_ctf_status
+
+    status = check_ctf_status()
+    prompt_path = _get_ctf_prompt_path(tool)
+    prompt_exists = bool(prompt_path and os.path.exists(prompt_path))
+
+    if tool == 'codex':
+        return (status.installed or status.global_installed) and prompt_exists
+    if tool == 'claude_code':
+        return status.claude_installed and prompt_exists
+    if tool == 'opencode':
+        return status.opencode_installed and prompt_exists
+    return False
 
 
 def _read_ctf_prompt_for_tool(tool: str) -> str | None:
     """读取工具当前实际安装的 CTF 提示词，未安装时从配置中读取自定义内容，都没有则返回 None"""
     # 优先读已安装的实际文件
-    path = _CTF_PROMPT_PATHS.get(tool)
+    path = _get_ctf_prompt_path(tool)
     if path and os.path.exists(path):
         with open(path, 'r', encoding='utf-8') as f:
             return f.read()
@@ -1217,15 +1240,15 @@ def _get_default_prompt(tool: str) -> str:
 @router.get("/ctf/prompt/{tool}")
 async def get_ctf_prompt(tool: str):
     """获取 CTF 提示词内容"""
-    if tool not in _CTF_PROMPT_PATHS:
+    if tool not in _SUPPORTED_CTF_PROMPT_TOOLS:
         raise HTTPException(status_code=400, detail=f"不支持的工具: {tool}")
 
-    prompt_path = _CTF_PROMPT_PATHS[tool]
+    prompt_path = _get_ctf_prompt_path(tool)
     default_prompt = _get_default_prompt(tool)
-    is_installed = os.path.exists(prompt_path)
+    is_installed = _is_ctf_prompt_installed(tool)
 
     # 已安装：读取实际文件
-    if is_installed:
+    if is_installed and prompt_path and os.path.exists(prompt_path):
         try:
             with open(prompt_path, 'r', encoding='utf-8') as f:
                 prompt = f.read()
@@ -1251,14 +1274,14 @@ async def get_ctf_prompt(tool: str):
 @router.post("/ctf/prompt/{tool}")
 async def save_ctf_prompt(tool: str, body: dict):
     """保存 CTF 提示词"""
-    if tool not in _CTF_PROMPT_PATHS:
+    if tool not in _SUPPORTED_CTF_PROMPT_TOOLS:
         raise HTTPException(status_code=400, detail=f"不支持的工具: {tool}")
 
     prompt = body.get('prompt', '')
     if not prompt:
         raise HTTPException(status_code=400, detail="提示词内容不能为空")
 
-    prompt_path = _CTF_PROMPT_PATHS[tool]
+    prompt_path = _get_ctf_prompt_path(tool)
 
     # 查找匹配的内置模板，获取其目标文件名
     from codex_session_patcher.ctf_config.templates import BUILTIN_TEMPLATES
@@ -1269,7 +1292,7 @@ async def save_ctf_prompt(tool: str, body: dict):
             break
 
     # 已安装：写入对应文件
-    if os.path.exists(prompt_path):
+    if prompt_path and os.path.exists(prompt_path):
         try:
             with open(prompt_path, 'w', encoding='utf-8') as f:
                 f.write(prompt)
@@ -1291,14 +1314,14 @@ async def save_ctf_prompt(tool: str, body: dict):
 @router.post("/ctf/prompt/{tool}/reset")
 async def reset_ctf_prompt(tool: str):
     """恢复 CTF 提示词为默认值"""
-    if tool not in _CTF_PROMPT_PATHS:
+    if tool not in _SUPPORTED_CTF_PROMPT_TOOLS:
         raise HTTPException(status_code=400, detail=f"不支持的工具: {tool}")
 
     default_prompt = _get_default_prompt(tool)
-    prompt_path = _CTF_PROMPT_PATHS[tool]
+    prompt_path = _get_ctf_prompt_path(tool)
 
     # 已安装：更新文件为默认
-    if os.path.exists(prompt_path):
+    if prompt_path and os.path.exists(prompt_path):
         try:
             with open(prompt_path, 'w', encoding='utf-8') as f:
                 f.write(default_prompt)
@@ -1321,7 +1344,7 @@ MAX_TEMPLATES = 5
 @router.get("/ctf/prompt/{tool}/templates")
 async def list_ctf_templates(tool: str):
     """获取工具的所有提示词模板（内置模板 + 用户模板）"""
-    if tool not in _CTF_PROMPT_PATHS:
+    if tool not in _SUPPORTED_CTF_PROMPT_TOOLS:
         raise HTTPException(status_code=400, detail=f"不支持的工具: {tool}")
 
     from codex_session_patcher.ctf_config.templates import BUILTIN_TEMPLATES
@@ -1335,7 +1358,7 @@ async def list_ctf_templates(tool: str):
 @router.post("/ctf/prompt/{tool}/templates")
 async def save_ctf_template(tool: str, body: dict):
     """保存提示词为模板（最多 5 个）"""
-    if tool not in _CTF_PROMPT_PATHS:
+    if tool not in _SUPPORTED_CTF_PROMPT_TOOLS:
         raise HTTPException(status_code=400, detail=f"不支持的工具: {tool}")
 
     name = body.get('name', '').strip()
@@ -1366,7 +1389,7 @@ async def save_ctf_template(tool: str, body: dict):
 @router.delete("/ctf/prompt/{tool}/templates/{template_name}")
 async def delete_ctf_template(tool: str, template_name: str):
     """删除指定用户模板（内置模板不可删除）"""
-    if tool not in _CTF_PROMPT_PATHS:
+    if tool not in _SUPPORTED_CTF_PROMPT_TOOLS:
         raise HTTPException(status_code=400, detail=f"不支持的工具: {tool}")
 
     from codex_session_patcher.ctf_config.templates import BUILTIN_TEMPLATES

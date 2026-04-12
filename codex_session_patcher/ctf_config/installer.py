@@ -30,6 +30,7 @@ class CTFConfigInstaller:
         self.codex_dir = os.path.expanduser("~/.codex")
         self.config_path = os.path.join(self.codex_dir, "config.toml")
         self.prompts_dir = os.path.join(self.codex_dir, "prompts")
+        self.prompt_path = os.path.join(self.prompts_dir, self.DEFAULT_PROMPT_FILE)
 
     def _get_prompt_file(self) -> str:
         """从用户配置获取当前选中的模板文件名，没有则返回默认"""
@@ -80,6 +81,7 @@ class CTFConfigInstaller:
             # 2. 确定 prompt 文件名和内容
             prompt_file = self._get_prompt_file()
             prompt_path = os.path.join(self.prompts_dir, prompt_file)
+            self.prompt_path = prompt_path
             prompt_content = custom_prompt or self._get_prompt_content()
 
             # 3. 确保 prompts 目录存在
@@ -265,6 +267,7 @@ model_instructions_file = "~/.codex/prompts/{filename}"
             # 1. 确定模板文件
             prompt_file = self._get_prompt_file()
             prompt_path = os.path.join(self.prompts_dir, prompt_file)
+            self.prompt_path = prompt_path
             target_config = f'model_instructions_file = "~/.codex/prompts/{prompt_file}"'
 
             # 2. 先卸载 Profile 模式（如果已启用）

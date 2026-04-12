@@ -6,9 +6,6 @@ from __future__ import annotations
 
 import json
 import os
-import tempfile
-
-import pytest
 
 
 class TestCTFPromptTemplates:
@@ -16,7 +13,7 @@ class TestCTFPromptTemplates:
 
     def test_codex_template_exists(self):
         from codex_session_patcher.ctf_config.templates import SECURITY_MODE_PROMPT
-        assert '# Security Testing Mode' in SECURITY_MODE_PROMPT
+        assert 'CTF' in SECURITY_MODE_PROMPT
         assert len(SECURITY_MODE_PROMPT) > 100
 
     def test_claude_template_exists(self):
@@ -62,20 +59,19 @@ class TestCustomPromptParameter:
 
     def test_codex_installer_uses_default_without_custom(self, tmp_path):
         from codex_session_patcher.ctf_config.installer import CTFConfigInstaller
-        from codex_session_patcher.ctf_config.templates import SECURITY_MODE_PROMPT
+        from codex_session_patcher.ctf_config.templates import BUILTIN_TEMPLATES
 
         installer = CTFConfigInstaller()
         installer.codex_dir = str(tmp_path / ".codex")
         installer.config_path = os.path.join(installer.codex_dir, "config.toml")
         installer.prompts_dir = os.path.join(installer.codex_dir, "prompts")
-        installer.prompt_path = os.path.join(installer.prompts_dir, "security_mode.md")
 
         success, _ = installer.install()
         assert success
 
         with open(installer.prompt_path, 'r') as f:
             content = f.read()
-        assert content == SECURITY_MODE_PROMPT
+        assert content == BUILTIN_TEMPLATES['codex'][0]['prompt']
 
     def test_claude_installer_accepts_custom_prompt(self, tmp_path):
         from codex_session_patcher.ctf_config.installer import ClaudeCodeCTFInstaller
@@ -96,7 +92,7 @@ class TestCustomPromptParameter:
 
 
 class TestCTFStatus:
-    """验证 CTFStatus 包含 OpenCode 字段"""
+    """验证 CTF status 结构和动态 prompt 路径解析"""
 
     def test_status_has_opencode_fields(self):
         from codex_session_patcher.ctf_config.status import CTFStatus
@@ -107,3 +103,67 @@ class TestCTFStatus:
         assert hasattr(status, 'opencode_workspace_path')
         assert hasattr(status, 'opencode_prompt_path')
         assert status.opencode_installed is False
+
+    def test_status_detects_profile_prompt_file_from_config(self, tmp_path, monkeypatch):
+        from codex_session_patcher.ctf_config import status as status_module
+
+        home = tmp_path
+        codex_dir = home / ".codex"
+        prompts_dir = codex_dir / "prompts"
+        prompt_path = prompts_dir / "ctf_optimized.md"
+        config_path = codex_dir / "config.toml"
+
+        prompts_dir.mkdir(parents=True)
+        prompt_path.write_text("# custom prompt", encoding="utf-8")
+        config_path.write_text(
+            '[profiles.ctf]\nmodel_instructions_file = "~/.codex/prompts/ctf_optimized.md"\n',
+            encoding="utf-8",
+        )
+
+        monkeypatch.setenv("HOME", str(home))
+        monkeypatch.setenv("USERPROFILE", str(home))
+        monkeypatch.setattr(status_module, "DEFAULT_CODEX_DIR", str(codex_dir))
+        monkeypatch.setattr(status_module, "DEFAULT_CODEX_CONFIG_PATH", str(config_path))
+        monkeypatch.setattr(status_module, "DEFAULT_CODEX_PROMPTS_DIR", str(prompts_dir))
+        monkeypatch.setattr(
+            status_module,
+            "DEFAULT_PATCHER_CONFIG_PATH",
+            str(home / ".codex-patcher" / "config.json"),
+        )
+
+        status = status_module.check_ctf_status()
+
+        assert status.profile_available is True
+        assert status.prompt_exists is True
+        assert status.installed is True
+        assert status.prompt_path == os.path.normpath(str(prompt_path))
+
+    def test_get_codex_prompt_path_falls_back_to_saved_template_file(self, tmp_path, monkeypatch):
+        from codex_session_patcher.ctf_config import status as status_module
+
+        home = tmp_path
+        codex_dir = home / ".codex"
+        prompts_dir = codex_dir / "prompts"
+        patcher_config_path = home / ".codex-patcher" / "config.json"
+        patcher_config_path.parent.mkdir(parents=True)
+        patcher_config_path.write_text(
+            json.dumps(
+                {
+                    "ctf_prompts": {
+                        "codex": {
+                            "file": "ctf_private_deploy.md",
+                        }
+                    }
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        monkeypatch.setattr(status_module, "DEFAULT_CODEX_DIR", str(codex_dir))
+        monkeypatch.setattr(status_module, "DEFAULT_CODEX_CONFIG_PATH", str(codex_dir / "config.toml"))
+        monkeypatch.setattr(status_module, "DEFAULT_CODEX_PROMPTS_DIR", str(prompts_dir))
+        monkeypatch.setattr(status_module, "DEFAULT_PATCHER_CONFIG_PATH", str(patcher_config_path))
+
+        prompt_path = status_module.get_codex_prompt_path()
+
+        assert prompt_path == os.path.join(str(prompts_dir), "ctf_private_deploy.md")
