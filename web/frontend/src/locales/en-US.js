@@ -178,9 +178,9 @@ export default {
   settings: {
     title: 'Settings',
     aiConfig: 'AI Configuration',
-    aiConfigDesc: 'For AI rewrite feature, supports OpenAI-compatible API',
+    aiConfigDesc: 'For AI rewrite feature, supports OpenAI-compatible APIs such as /v1/chat/completions and /v1/responses',
     apiEndpoint: 'API Endpoint',
-    apiEndpointPlaceholder: 'e.g., https://api.openai.com/v1',
+    apiEndpointPlaceholder: 'e.g., https://api.openai.com/v1/chat/completions or /v1/responses',
     apiKey: 'API Key',
     apiKeyPlaceholder: 'sk-...',
     modelName: 'Model Name',

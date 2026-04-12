@@ -178,9 +178,9 @@ export default {
   settings: {
     title: '设置',
     aiConfig: 'AI 配置',
-    aiConfigDesc: '用于 AI 改写功能，支持 OpenAI 兼容 API',
+    aiConfigDesc: '用于 AI 改写功能，支持 OpenAI 兼容接口，例如 /v1/chat/completions 或 /v1/responses',
     apiEndpoint: 'API Endpoint',
-    apiEndpointPlaceholder: '例如：https://api.openai.com/v1',
+    apiEndpointPlaceholder: '例如：https://api.openai.com/v1/chat/completions 或 /v1/responses',
     apiKey: 'API Key',
     apiKeyPlaceholder: 'sk-...',
     modelName: '模型名称',
