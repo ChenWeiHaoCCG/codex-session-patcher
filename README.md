@@ -88,10 +88,10 @@ cd web/frontend && npm install && npm run build && cd ../..
 ./scripts/start-web.sh
 
 # 或直接启动
-uvicorn web.backend.main:app --host 127.0.0.1 --port 8080
+uvicorn web.backend.main:app --host 0.0.0.0 --port 8080
 ```
 
-访问 `http://localhost:8080`
+访问 `http://localhost:8080`，远程访问使用 `http://<服务器IP>:8080`
 
 **开发模式（前后端热更新）：**
 ```bash
@@ -159,7 +159,7 @@ codex-patcher --rewrite "帮我写一个逆向分析脚本"
 | `--all` | 处理所有会话 |
 | `--keep-reasoning` | 保留推理内容（thinking/reasoning blocks），仅替换拒绝回复 |
 | `--web` | 启动 Web UI |
-| `--host` | Web UI 监听地址（默认 127.0.0.1） |
+| `--host` | Web UI 监听地址（默认 0.0.0.0） |
 | `--port` | Web UI 端口（默认 8080） |
 | `--install-ctf-config` | 安装 Codex CTF 配置 |
 | `--uninstall-ctf-config` | 卸载 Codex CTF 配置 |
