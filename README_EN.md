@@ -93,6 +93,16 @@ uvicorn web.backend.main:app --host 127.0.0.1 --port 8080
 
 Visit `http://localhost:8080`
 
+**Windows (PowerShell + Conda):**
+```powershell
+.\scripts\start-web.ps1 start -CondaEnv codex-patcher -Port 8080
+.\scripts\start-web.ps1 status -Port 8080
+.\scripts\start-web.ps1 restart -Port 8080
+.\scripts\start-web.ps1 stop -Port 8080
+```
+
+More details: `docs/WINDOWS_WEB.md`
+
 **Development mode (hot reload):**
 ```bash
 ./scripts/dev-web.sh

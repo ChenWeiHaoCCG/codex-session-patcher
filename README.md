@@ -89,6 +89,16 @@ cd web/frontend && npm install && npm run build && cd ../..
 
 # 或直接启动
 uvicorn web.backend.main:app --host 127.0.0.1 --port 8080
+
+# windwos脚本启动
+cd D:\AI\codex-session-patcher
+.\scripts\start-web.bat start -CondaEnv codex-patcher -Port 9090
+
+# 常用命令：
+.\scripts\start-web.bat status -Port 9090
+.\scripts\start-web.bat restart -Port 9090
+.\scripts\start-web.bat stop -Port 9090
+.\scripts\start-web.bat logs -Port 9090
 ```
 
 访问 `http://localhost:8080`
