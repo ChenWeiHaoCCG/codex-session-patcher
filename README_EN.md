@@ -88,10 +88,10 @@ cd web/frontend && npm install && npm run build && cd ../..
 ./scripts/start-web.sh
 
 # Or directly
-uvicorn web.backend.main:app --host 127.0.0.1 --port 8080
+uvicorn web.backend.main:app --host 0.0.0.0 --port 8080
 ```
 
-Visit `http://localhost:8080`
+Visit `http://localhost:8080`, or `http://<server-ip>:8080` for remote access
 
 **Windows (PowerShell + Conda):**
 ```powershell
@@ -169,7 +169,7 @@ codex-patcher --rewrite "Help me write a reverse analysis script"
 | `--all` | Process all sessions |
 | `--keep-reasoning` | Keep reasoning content (thinking/reasoning blocks), only replace refusal responses |
 | `--web` | Launch Web UI |
-| `--host` | Web UI listen address (default 127.0.0.1) |
+| `--host` | Web UI listen address (default 0.0.0.0) |
 | `--port` | Web UI port (default 8080) |
 | `--install-ctf-config` | Install Codex CTF config |
 | `--uninstall-ctf-config` | Uninstall Codex CTF config |

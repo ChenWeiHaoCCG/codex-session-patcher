@@ -5,6 +5,10 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+BACKEND_HOST="${BACKEND_HOST:-0.0.0.0}"
+BACKEND_PORT="${BACKEND_PORT:-8080}"
+FRONTEND_HOST="${FRONTEND_HOST:-0.0.0.0}"
+FRONTEND_PORT="${FRONTEND_PORT:-3000}"
 
 echo "🚀 Codex Session Patcher Web UI (开发模式)"
 echo "=========================================="
@@ -33,25 +37,26 @@ if [ ! -d "node_modules" ]; then
 fi
 
 # 启动后端（后台）
-echo "🔧 启动后端服务 (端口 8080)..."
+echo "🔧 启动后端服务 (端口 ${BACKEND_PORT})..."
 cd "$PROJECT_DIR"
-python -m uvicorn web.backend.main:app --host 127.0.0.1 --port 8080 &
+python -m uvicorn web.backend.main:app --host "$BACKEND_HOST" --port "$BACKEND_PORT" &
 BACKEND_PID=$!
 
 # 等待后端启动
 sleep 2
 
 # 启动前端开发服务器
-echo "🎨 启动前端开发服务器 (端口 3000)..."
+echo "🎨 启动前端开发服务器 (端口 ${FRONTEND_PORT})..."
 cd "$PROJECT_DIR/web/frontend"
-npm run dev &
+npm run dev -- --host "$FRONTEND_HOST" --port "$FRONTEND_PORT" &
 FRONTEND_PID=$!
 
 echo ""
 echo "✅ 服务已启动"
-echo "   前端: http://localhost:3000"
-echo "   后端: http://127.0.0.1:8080"
-echo "   API 文档: http://127.0.0.1:8080/docs"
+echo "   前端: http://localhost:${FRONTEND_PORT}"
+echo "   后端: http://localhost:${BACKEND_PORT}"
+echo "   API 文档: http://localhost:${BACKEND_PORT}/docs"
+echo "   远程访问: http://<服务器IP>:${FRONTEND_PORT} (开发模式) 或 http://<服务器IP>:${BACKEND_PORT} (生产模式)"
 echo ""
 echo "按 Ctrl+C 停止所有服务"
 

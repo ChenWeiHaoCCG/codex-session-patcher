@@ -294,7 +294,7 @@ def main():
 
     # Web UI 参数
     parser.add_argument('--web', action='store_true', help='启动 Web UI')
-    parser.add_argument('--host', default='127.0.0.1', help='Web UI 监听地址 (默认: 127.0.0.1)')
+    parser.add_argument('--host', default='0.0.0.0', help='Web UI 监听地址 (默认: 0.0.0.0)')
     parser.add_argument('--port', type=int, default=8080, help='Web UI 端口 (默认: 8080)')
 
     # CTF 配置参数 — Codex

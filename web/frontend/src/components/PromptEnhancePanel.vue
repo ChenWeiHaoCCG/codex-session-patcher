@@ -264,6 +264,7 @@ import { useI18n } from 'vue-i18n'
 import { useMessage, useDialog, NButton } from 'naive-ui'
 import { useCTFStore } from '../stores/ctfStore'
 import { useSettingsStore } from '../stores/settingsStore'
+import { copyText } from '../utils/clipboard'
 
 const { t } = useI18n()
 const message = useMessage()
@@ -522,10 +523,10 @@ async function handleRewrite() {
 
 async function copyRewritten() {
   try {
-    await navigator.clipboard.writeText(ctfStore.rewrittenRequest)
+    await copyText(ctfStore.rewrittenRequest)
     message.success(t('common.copied'))
   } catch {
-    message.error(t('common.error'))
+    message.error(t('enhance.copyFailed'))
   }
 }
 
