@@ -1,41 +1,36 @@
 @echo off
-REM Windows 打包脚本 - 生成 exe 可执行文件
+setlocal
 
-set VERSION=1.3.1
-set DIST_DIR=dist
+set VERSION=1.4.1
 
-echo === Codex Session Patcher 打包脚本 ===
-echo 版本: %VERSION%
+echo === Codex Session Patcher Build ===
+echo Version: %VERSION%
 
-REM 清理旧构建
-echo 清理旧构建...
+echo Cleaning previous build artifacts...
 if exist build rmdir /s /q build
 if exist dist rmdir /s /q dist
 if exist *.egg-info rmdir /s /q *.egg-info
 
-REM 安装依赖
-echo 安装打包依赖...
+echo Installing build dependency...
 pip install pyinstaller
+if errorlevel 1 exit /b 1
 
-REM 构建 CLI 版本
-echo 构建 CLI 可执行文件...
-pyinstaller codex-patcher.spec --clean
+echo Building CLI executable...
+pyinstaller codex-patcher.spec --clean -y
+if errorlevel 1 exit /b 1
 
-REM 重命名输出
+echo Building Web Launcher executable...
+pyinstaller codex-web-launcher.spec --clean -y
+if errorlevel 1 exit /b 1
+
 if exist dist\codex-patcher (
-    echo 打包完成: dist\codex-patcher\
+    echo CLI build output:
     dir dist\codex-patcher
 )
 
-REM 创建压缩包
-set ARCHIVE_NAME=codex-patcher-%VERSION%-windows
-cd dist
-if exist codex-patcher (
-    rename codex-patcher %ARCHIVE_NAME%
-    REM 使用 PowerShell 创建 zip
-    powershell Compress-Archive -Path %ARCHIVE_NAME% -DestinationPath %ARCHIVE_NAME%.zip
-    echo 分发包已创建: dist\%ARCHIVE_NAME%.zip
+if exist dist\codex-patcher-launcher (
+    echo Web Launcher build output:
+    dir dist\codex-patcher-launcher
 )
-cd ..
 
-echo === 打包完成 ===
+echo === Build complete ===

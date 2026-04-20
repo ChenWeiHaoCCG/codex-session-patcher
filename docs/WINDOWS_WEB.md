@@ -1,65 +1,103 @@
 # Windows Web Startup
 
-Use `scripts/start-web.ps1` to manage the Web UI on Windows.
+Use the Windows scripts or the packaged desktop launcher to manage the Web UI.
 
-It provides:
+## Capabilities
 
-- Conda environment based startup
+- Conda-first startup
 - Custom host and port
 - Port conflict detection before startup
-- Automatic frontend build on each `start`
+- Automatic dependency installation
+- Automatic frontend build
 - `start`, `stop`, `restart`, `status`, and `logs` commands
 - PID, state, and log files under `web-logs\`
+- Packaged desktop launcher exe for Windows
 
 ## Quick Start
 
+PowerShell:
+
 ```powershell
-.\scripts\start-web.ps1 start -CondaEnv codex-patcher -Port 8080
+.\scripts\start-web.ps1 start
 ```
 
-You can also use the batch wrapper:
+Batch wrapper:
 
 ```bat
-.\scripts\start-web.bat start -CondaEnv codex-patcher -Port 8080
+.\scripts\start-web.bat start
 ```
 
-## Commands
+Desktop launcher:
 
-Start the service:
-
-```powershell
-.\scripts\start-web.ps1 start -CondaEnv codex-patcher -Host 127.0.0.1 -Port 8080
+```bat
+dist\codex-patcher-launcher\codex-patcher-launcher.exe
 ```
 
-Check the current status:
+## Common Commands
+
+Start with default port:
 
 ```powershell
-.\scripts\start-web.ps1 status -Port 8080
+.\scripts\start-web.ps1 start
 ```
 
-Restart the service:
+Start with custom port:
 
 ```powershell
-.\scripts\start-web.ps1 restart -Port 8080
+.\scripts\start-web.ps1 start -Port 9999
 ```
 
-Stop the service:
+Start with a specific Conda environment:
 
 ```powershell
-.\scripts\start-web.ps1 stop -Port 8080
+.\scripts\start-web.ps1 start -CondaEnv codex-patcher -Host 127.0.0.1 -Port 9090
+```
+
+Status:
+
+```powershell
+.\scripts\start-web.ps1 status -Port 9090
+```
+
+Restart:
+
+```powershell
+.\scripts\start-web.ps1 restart -Port 9090
+```
+
+Stop:
+
+```powershell
+.\scripts\start-web.ps1 stop -Port 9090
 ```
 
 Show logs:
 
 ```powershell
-.\scripts\start-web.ps1 logs -Port 8080
-.\scripts\start-web.ps1 logs -Port 8080 -Follow
+.\scripts\start-web.ps1 logs -Port 9090
+.\scripts\start-web.ps1 logs -Port 9090 -Follow
 ```
 
 ## Notes
 
-- Default host is `127.0.0.1`.
-- Default port is `8080`.
-- Default Conda environment is `base`.
-- If `web\frontend\node_modules` does not exist, the script runs `npm install` first.
-- The script checks that `fastapi` and `uvicorn` are available in the selected Conda environment before startup.
+- Default host is `127.0.0.1`
+- Default port is `9090`
+- Default Conda prefix is `.\.conda\web`
+- The launcher creates `.\.conda\web` automatically if missing
+- Missing Python web runtime dependencies are installed automatically
+- Missing frontend dependencies are installed automatically
+- Frontend assets are rebuilt automatically before startup
+- The desktop launcher supports custom ports and scrollable startup logs
+- The desktop launcher checks occupied ports without showing a visible `powershell.exe` window
+
+## Build
+
+```bat
+scripts\build-binary.bat
+```
+
+Generated desktop launcher:
+
+```bat
+dist\codex-patcher-launcher\codex-patcher-launcher.exe
+```

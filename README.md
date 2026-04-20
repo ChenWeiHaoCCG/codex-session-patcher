@@ -92,6 +92,9 @@ uvicorn web.backend.main:app --host 0.0.0.0 --port 8080
 
 # Windows 脚本启动
 cd D:\AI\codex-session-patcher
+.\scripts\start-web.bat start -Port 9090
+
+# 若想指定已有 Conda 环境
 .\scripts\start-web.bat start -CondaEnv <your-conda-env> -Port 9090
 
 # 常用命令
@@ -102,6 +105,14 @@ cd D:\AI\codex-session-patcher
 ```
 
 访问 `http://localhost:8080`，远程访问使用 `http://<服务器IP>:8080`
+
+启动脚本会自动：
+
+- 检查可用 Python，优先使用显式指定解释器或当前激活环境
+- 若指定 Conda 环境或 Conda 前缀，则使用对应环境；未指定时不再强依赖 Conda
+- 检查并自动安装 Python Web 依赖 `pip install -e ".[web]"`
+- 检查并自动安装前端依赖 `npm install`
+- 自动执行前端构建 `npm run build`
 
 **开发模式（前后端热更新）：**
 ```bash

@@ -46,3 +46,6 @@ htmlcov/
 node_modules/
 web-logs/
 docs/plans/
+.conda/
+.tmp_web_install_test/
+tmp_desktop_launcher_state.json

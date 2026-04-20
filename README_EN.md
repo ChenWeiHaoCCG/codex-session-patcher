@@ -4,62 +4,55 @@
 
 **AI Coding Session Cleaner & CTF/Pentest Prompt Injection Tool**
 
-Supports **Codex CLI** · **Claude Code** · **OpenCode**
+Supports **Codex CLI**, **Claude Code**, and **OpenCode**
 
 [简体中文](./README.md) | English
-
-[![GitHub stars](https://img.shields.io/github/stars/ryfineZ/codex-session-patcher?style=flat-square)](https://github.com/ryfineZ/codex-session-patcher/stargazers)
-[![GitHub release](https://img.shields.io/github/v/release/ryfineZ/codex-session-patcher?style=flat-square)](https://github.com/ryfineZ/codex-session-patcher/releases)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
-[![Python](https://img.shields.io/badge/Python-3.8+-blue?style=flat-square)](https://python.org)
 
 </div>
 
 ---
 
-## What is this?
+## What Is This?
 
-AI coding tools (Codex, Claude Code, OpenCode) frequently refuse security-related requests in CTF competitions, penetration testing, and security research scenarios, causing sessions to break.
+AI coding tools such as Codex, Claude Code, and OpenCode often refuse security-related requests in CTF, pentest, and research scenarios, which breaks workflow continuity.
 
-**Codex Session Patcher** provides two types of solutions:
+Codex Session Patcher provides two groups of capabilities:
 
-**1. Session Cleaning** — Scan existing refusal responses and replace them with compliant content so you can resume the session
+1. Session cleaning
+Replace refusal responses in existing sessions so you can continue from the same conversation.
 
-**2. CTF Prompt Injection** — Inject security testing context at the configuration level to reduce refusals from the start
+2. CTF prompt injection
+Inject security-testing context into supported tools to reduce future refusals.
 
 ---
 
 ## Features
 
 ### Session Cleaning
-- **Smart Detection** — Two-level refusal detection (strong phrase full-text match + weak keyword prefix match), low false positive rate
-- **AI Rewrite** — Call LLM to generate context-aware replacement responses (supports OpenAI / Ollama / OpenRouter compatible APIs)
-- **Batch Cleaning** — Process all refusal responses in a session, not just the last one
-- **Reasoning Erasure** — Remove encrypted Reasoning / Thinking block content
-- **Backup & Restore** — Auto-backup before cleaning, one-click restore to any historical version
-- **Diff View** — Side-by-side before/after comparison
 
-### CTF/Pentest Prompt Injection
-- **Codex Profile Mode** — Create a `ctf` profile, only active when launched with `codex -p ctf`, doesn't affect normal sessions
-- **Codex Global Mode** — Inject into global config, automatically active for all new sessions
-- **Claude Code Workspace** — Create dedicated CTF workspace `~/.claude-ctf-workspace` with project-level CLAUDE.md injection
-- **OpenCode Workspace** — Create dedicated CTF workspace `~/.opencode-ctf-workspace` with AGENTS.md injection
-- **Custom Prompts** — Edit injection prompts directly in Web UI, with template save/switch support
-- **AI Prompt Rewrite** — AI rewrites your requests to align with the injected CTF system prompt for better results
+- Smart refusal detection with low false positive rate
+- AI-assisted rewrite for refusal responses
+- Batch cleaning for all refusals in a session
+- Reasoning block removal
+- Backup and restore support
+- Diff preview before applying changes
 
-### Platform Support
+### CTF / Pentest Prompt Injection
 
-| Platform | Session Cleaning | CTF Injection | Session Format |
-|----------|-----------------|---------------|----------------|
-| **Codex CLI** | ✅ | ✅ Profile + Global | JSONL |
-| **Claude Code** | ✅ | ✅ Dedicated workspace | JSONL |
-| **OpenCode** | ✅ | ✅ Dedicated workspace | SQLite |
+- Codex profile mode
+- Codex global mode
+- Claude Code dedicated workspace mode
+- OpenCode dedicated workspace mode
+- Custom prompts in Web UI
+- AI prompt rewrite based on injected context
 
 ### Web UI
-- **Session List** — Unified multi-platform management, grouped by date, filter by format/refusal status/backup status
-- **Visual Cleaning** — Preview panel + Diff view + one-click execute
-- **i18n** — Supports Chinese / English interface
-- **Real-time Logs** — WebSocket push, operation logs in real time
+
+- Session list with filters and grouping
+- Visual cleaning workflow
+- Chinese / English interface
+- Real-time logs over WebSocket
+- Windows desktop launcher exe with custom port and startup log panel
 
 ---
 
@@ -69,10 +62,10 @@ AI coding tools (Codex, Claude Code, OpenCode) frequently refuse security-relate
 git clone https://github.com/ryfineZ/codex-session-patcher.git
 cd codex-session-patcher
 
-# CLI only (zero extra dependencies)
+# CLI only
 pip install -e .
 
-# With Web UI
+# Web UI
 pip install -e ".[web]"
 cd web/frontend && npm install && npm run build && cd ../..
 ```
@@ -81,29 +74,55 @@ cd web/frontend && npm install && npm run build && cd ../..
 
 ## Usage
 
-### Web UI (Recommended)
+### Web UI
 
 ```bash
 # Production mode
 ./scripts/start-web.sh
 
 # Or directly
-uvicorn web.backend.main:app --host 0.0.0.0 --port 8080
+uvicorn web.backend.main:app --host 0.0.0.0 --port 9090
 ```
 
-Visit `http://localhost:8080`, or `http://<server-ip>:8080` for remote access
+Visit `http://localhost:9090`, or `http://<server-ip>:9090`.
 
-**Windows (PowerShell + Conda):**
+Windows script usage:
+
 ```powershell
-.\scripts\start-web.ps1 start -CondaEnv codex-patcher -Port 8080
-.\scripts\start-web.ps1 status -Port 8080
-.\scripts\start-web.ps1 restart -Port 8080
-.\scripts\start-web.ps1 stop -Port 8080
+.\scripts\start-web.bat start
+.\scripts\start-web.ps1 start -CondaEnv codex-patcher -Port 9090
+.\scripts\start-web.ps1 start -Port 9999
+.\scripts\start-web.ps1 status -Port 9090
+.\scripts\start-web.ps1 restart -Port 9090
+.\scripts\start-web.ps1 stop -Port 9090
 ```
 
-More details: `docs/WINDOWS_WEB.md`
+The launcher now automatically:
 
-**Development mode (hot reload):**
+- uses Conda with default prefix `./.conda/web`
+- creates `./.conda/web` if missing
+- installs missing Python web runtime dependencies automatically
+- installs missing frontend dependencies with `npm install`
+- rebuilds the frontend with `npm run build`
+- writes launcher logs under `web-logs`
+
+### Windows Desktop Launcher
+
+```powershell
+dist\codex-patcher-launcher\codex-patcher-launcher.exe
+```
+
+Desktop launcher features:
+
+- Chinese UI labels and status prompts
+- Custom service port input
+- Auto-release occupied port before startup
+- Detailed startup log panel with scrolling
+- One-click browser open after service startup
+- No visible `powershell.exe` pop-up during port checks
+
+### Development Mode
+
 ```bash
 ./scripts/dev-web.sh
 ```
@@ -111,163 +130,49 @@ More details: `docs/WINDOWS_WEB.md`
 ### CLI
 
 ```bash
-# Show help
 codex-patcher --help
-
-# Preview mode (no file modification)
 codex-patcher --dry-run --show-content
-
-# Clean latest session
 codex-patcher --latest
-
-# Clean all sessions
 codex-patcher --all
-
-# Specify session directory
 codex-patcher --session-dir ~/.codex/sessions --latest
-
-# Specify format (codex / claude-code / opencode / auto)
 codex-patcher --latest --format claude-code
 codex-patcher --latest --format opencode
-
-# No backup
 codex-patcher --latest --no-backup
-
-# Launch Web UI
 codex-patcher --web
-codex-patcher --web --host 0.0.0.0 --port 8080
-
-# CTF Prompt Injection — Codex
-codex-patcher --install-ctf-config    # Install
-codex-patcher --uninstall-ctf-config  # Uninstall
-
-# CTF Prompt Injection — Claude Code
-codex-patcher --install-claude-ctf    # Install
-codex-patcher --uninstall-claude-ctf  # Uninstall
-
-# CTF Prompt Injection — OpenCode
-codex-patcher --install-opencode-ctf    # Install
-codex-patcher --uninstall-opencode-ctf  # Uninstall
-
-# View all CTF config status
-codex-patcher --ctf-status
-
-# Rewrite prompt (requires AI config in Web UI first)
-codex-patcher --rewrite "Help me write a reverse analysis script"
+codex-patcher --web --host 0.0.0.0 --port 9090
 ```
-
-#### CLI Arguments
-
-| Argument | Description |
-|----------|-------------|
-| `--session-dir` | Specify session directory (auto-selected by default) |
-| `--format` | Session format: `codex` / `claude-code` / `opencode` / `auto` |
-| `--dry-run` | Preview mode, don't modify files |
-| `--no-backup` | Don't create backup files |
-| `--show-content` | Show detailed modification content |
-| `--latest` | Process only the latest session |
-| `--all` | Process all sessions |
-| `--keep-reasoning` | Keep reasoning content (thinking/reasoning blocks), only replace refusal responses |
-| `--web` | Launch Web UI |
-| `--host` | Web UI listen address (default 0.0.0.0) |
-| `--port` | Web UI port (default 8080) |
-| `--install-ctf-config` | Install Codex CTF config |
-| `--uninstall-ctf-config` | Uninstall Codex CTF config |
-| `--install-claude-ctf` | Install Claude Code CTF config |
-| `--uninstall-claude-ctf` | Uninstall Claude Code CTF config |
-| `--install-opencode-ctf` | Install OpenCode CTF config |
-| `--uninstall-opencode-ctf` | Uninstall OpenCode CTF config |
-| `--ctf-status` | View CTF config status for all platforms |
-| `--rewrite` | Rewrite prompt for better acceptance |
 
 ---
 
-## CTF/Pentest Workflow
+## Build Executables
 
-### Codex
+Windows:
 
-```
-1. Install CTF Profile
-   codex-patcher --install-ctf-config
-
-2. Launch with CTF profile (doesn't affect normal sessions)
-   codex -p ctf
-
-3. If refused → open Web UI → clean session
-
-4. Resume
-   codex resume
+```powershell
+scripts\build-binary.bat
 ```
 
-### Claude Code
+Cross-platform shell:
 
-```
-1. Web UI → Prompt Enhance → Claude Code → Enable
-   (creates ~/.claude-ctf-workspace)
-
-2. Launch from dedicated workspace
-   cd ~/.claude-ctf-workspace && claude
-
-3. If refused → Web UI clean → continue conversation
+```bash
+./scripts/build-binary.sh
 ```
 
-### OpenCode
+Outputs:
 
-```
-1. Web UI → Prompt Enhance → OpenCode → Enable
-   (creates ~/.opencode-ctf-workspace)
-
-2. Launch from dedicated workspace
-   cd ~/.opencode-ctf-workspace && opencode
-
-3. If refused → Web UI clean → continue conversation
-```
+- `dist/codex-patcher/codex-patcher.exe`
+- `dist/codex-patcher-launcher/codex-patcher-launcher.exe`
 
 ---
 
 ## Configuration
 
-CLI and Web UI share `~/.codex-patcher/config.json`:
+CLI and Web UI share:
 
-| Key | Description | Default |
-|-----|-------------|---------|
-| `mock_response` | Default replacement text | Compliant response |
-| `ai_enabled` | Enable AI rewrite | `false` |
-| `ai_endpoint` | LLM API endpoint | — |
-| `ai_key` | API Key | — |
-| `ai_model` | Model name | — |
-| `custom_keywords` | Custom refusal detection keywords | `{}` |
-| `ctf_prompts` | Custom CTF prompts per platform | Built-in templates |
-| `ctf_templates` | User-saved prompt templates | `{}` |
-
----
-
-## Limitations
-
-- **Cannot bypass platform-level safety policies** — Explicitly illegal requests may still be refused
-- **Effectiveness varies by model version** — Model updates may affect results
-- **OpenCode requires launching from workspace directory** — OpenCode has no profile mechanism; CTF injection depends on the workspace
-- **Resume required after cleaning** — You need to manually resume the session after cleaning
-
----
-
-## Support
-
-If this project helps you:
-
-- ⭐ Star the repo
-- ☕ Buy me a coffee — Sponsor button in the Web UI top-right corner (WeChat / USDC)
-- 📢 Follow on X: [@ZhangYufan73644](https://x.com/ZhangYufan73644)
+`~/.codex-patcher/config.json`
 
 ---
 
 ## License
 
 [MIT License](LICENSE)
-
----
-
-<div align="center">
-  <a href="https://github.com/ryfineZ">GitHub</a> ·
-  <a href="https://x.com/ZhangYufan73644">X (Twitter)</a>
-</div>
